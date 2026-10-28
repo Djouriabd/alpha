@@ -34,6 +34,7 @@ export type ExchangeMonitorState =
   | 'timeout'
   | 'bad-gateway'
   | 'unavailable'
+  | 'blocked'
   | 'error';
 
 export type ExchangeSnapshot = {
@@ -43,6 +44,8 @@ export type ExchangeSnapshot = {
   httpStatus?: number;
   latencyMs?: number;
   observedStatus?: string;
+  /** Set when a fallback domain answered instead of the main URL. */
+  checkedUrl?: string;
 };
 
 export type ExchangeAlertEvent = {

@@ -3,6 +3,8 @@ export type ExchangeEndpoint = {
   name: string;
   shortName: string;
   url: string;
+  /** Official alternative domains tried when `url` is geo-blocked (HTTP 403 or 451) from the server's region. */
+  fallbackUrls?: string[];
 };
 
 export const EXCHANGE_ENDPOINTS: ExchangeEndpoint[] = [
@@ -17,12 +19,15 @@ export const EXCHANGE_ENDPOINTS: ExchangeEndpoint[] = [
     name: 'Binance',
     shortName: 'BN',
     url: 'https://api.binance.com/sapi/v1/system/status',
+    // Binance's public market-data domain, which is not subject to the US block on api.binance.com.
+    fallbackUrls: ['https://data-api.binance.vision/api/v3/ping'],
   },
   {
     id: 'bybit',
     name: 'Bybit',
     shortName: 'BY',
     url: 'https://api.bybit.com/v5/market/time',
+    fallbackUrls: ['https://api.bytick.com/v5/market/time'],
   },
   {
     id: 'kucoin',

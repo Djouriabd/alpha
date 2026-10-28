@@ -26,6 +26,8 @@ function stateDetails(snapshot?: ExchangeSnapshot) {
       return { label: '502 Bad Gateway', tone: styles.toneRed };
     case 'unavailable':
       return { label: '503 Unavailable', tone: styles.toneRed };
+    case 'blocked':
+      return { label: 'Region blocked', tone: styles.toneAmber };
     case 'checking':
       return { label: 'Checking', tone: styles.toneAmber };
     default:
@@ -49,14 +51,21 @@ const EndpointCard = memo(function EndpointCard({ endpoint, snapshot }: {
             {details.label}
           </span>
         </div>
-        <p className={styles.endpointUrl}>{endpoint.url.replace('https://', '')}</p>
+        <p className={styles.endpointUrl}>{(snapshot?.checkedUrl ?? endpoint.url).replace('https://', '')}</p>
         <div className={styles.endpointMeta}>
           <span>{snapshot?.httpStatus ? `HTTP ${snapshot.httpStatus}` : 'No response yet'}</span>
           {snapshot?.latencyMs !== undefined && <span>{snapshot.latencyMs} ms</span>}
           {snapshot?.observedStatus !== undefined && (
             <span className={styles.observedStatus}>status: {snapshot.observedStatus}</span>
           )}
+          {snapshot?.checkedUrl && <span className={styles.observedStatus}>backup domain</span>}
         </div>
+        {snapshot?.state === 'blocked' && (
+          <p className={styles.endpointHint}>
+            {endpoint.name} refuses requests from the Alpha server&apos;s country. Host the server in another
+            region (see README) to monitor it.
+          </p>
+        )}
       </div>
     </li>
   );

@@ -73,9 +73,12 @@ Any Node.js host that runs Next.js works (Vercel, Netlify, Render, Railway, a VP
    Without it, everyone is signed out whenever the server restarts.
 3. Deploy.
 
-> **Region note:** Binance and Bybit block requests from some countries, including US-based servers.
-> If exchange watch shows them as failing after deployment, deploy the server functions to a
-> European or Asian region (for example `fra1` or `sin1` on Vercel).
+> **Region note:** Binance (HTTP 451) and Bybit (HTTP 403) refuse requests from some countries,
+> including US-based servers, which is where Vercel runs by default. `vercel.json` pins the server
+> to Frankfurt (`fra1`) to avoid this. When a block still happens, Alpha retries automatically on
+> each exchange's official backup domain (`data-api.binance.vision`, `api.bytick.com`); if every
+> domain is blocked, the card shows **Region blocked** instead of a failure. On other hosts, choose
+> a server region outside the US.
 
 ## Limits of a website
 
