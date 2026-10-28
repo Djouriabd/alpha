@@ -161,9 +161,25 @@ export function AlphaProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     let active = true;
     const controller = new AbortController();
-    fetchJson<{ session: SessionInfo | null }>('/api/auth/session', { signal: controller.signal })
-      .then(({ body }) => body?.session ?? null)
-      .catch(() => null)
+    // A network blip while loading must not look like "signed out", so keep retrying until the
+    // server gives a real answer.
+    const loadSession = async (): Promise<SessionInfo | null> => {
+      for (let attempt = 0; ; attempt++) {
+        try {
+          const { status, body } = await fetchJson<{ session: SessionInfo | null }>(
+            '/api/auth/session',
+            { signal: controller.signal },
+          );
+          if (status === 200 && body && 'session' in body) return body.session;
+        } catch {
+          // Retry below unless the provider unmounted.
+        }
+        if (!active) throw new Error('Unmounted');
+        await new Promise((resolve) => setTimeout(resolve, Math.min(1_000 * 2 ** attempt, 10_000)));
+      }
+    };
+
+    loadSession()
       .then((stored) => {
         if (!active) return;
         setHistory(store.getHistory());
@@ -174,7 +190,8 @@ export function AlphaProvider({ children }: { children: React.ReactNode }) {
         setExchangeHistory(store.getExchangeAlertHistory());
         if (stored) applySignedIn(stored);
         else applySignedOut();
-      });
+      })
+      .catch(() => undefined);
 
     // Keep every open Alpha tab in step: sign-in state over a channel, feeds through storage events.
     channel.current = openChannel();

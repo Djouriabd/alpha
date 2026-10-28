@@ -14,20 +14,19 @@ export type AlphaSession = SessionInfo & {
 const SESSION_COOKIE = 'alpha_session';
 const SESSION_MAX_AGE_SECONDS = 60 * 60 * 24 * 30;
 
-let fallbackKey: Buffer | null = null;
+let warnedAboutSecret = false;
 
 function encryptionKey() {
   const secret = process.env.SESSION_SECRET;
   if (secret && secret.length >= 32) return createHash('sha256').update(secret).digest();
 
-  // Without a configured secret, sessions only survive until the server restarts.
-  if (!fallbackKey) {
-    if (process.env.NODE_ENV === 'production') {
-      console.error('SESSION_SECRET is missing or shorter than 32 characters. Sessions will reset on restart.');
-    }
-    fallbackKey = randomBytes(32);
+  // A per-process random key would sign people out whenever a request reached another server
+  // instance or a restarted one, so fall back to the key baked into this build instead.
+  if (!warnedAboutSecret && process.env.NODE_ENV === 'production') {
+    warnedAboutSecret = true;
+    console.warn('SESSION_SECRET is missing or shorter than 32 characters. Sessions will reset on each deploy.');
   }
-  return fallbackKey;
+  return createHash('sha256').update(process.env.BUILD_SESSION_KEY ?? 'alpha-dev-session-key').digest();
 }
 
 function seal(session: AlphaSession) {

@@ -70,7 +70,8 @@ Any Node.js host that runs Next.js works (Vercel, Netlify, Render, Railway, a VP
 
 1. Import this repository into your host.
 2. Set the `SESSION_SECRET` environment variable (at least 32 random characters, see `.env.example`).
-   Without it, everyone is signed out whenever the server restarts.
+   Without it, Alpha falls back to a key generated at build time, so everyone is signed out on
+   each redeploy (but not on restarts).
 3. Deploy.
 
 > **Region note:** Binance (HTTP 451) and Bybit (HTTP 403) refuse requests from some countries,

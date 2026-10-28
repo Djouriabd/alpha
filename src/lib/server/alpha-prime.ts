@@ -27,12 +27,22 @@ export type AlphaSnapshot = {
 
 export class SessionExpiredError extends Error {}
 
+// Alpha Prime can refuse a request with 403 BROWSER_REQUEST_REQUIRED. That refusal says nothing
+// about the session, so it must be reported as a temporary failure, never as a sign-out.
+const REFUSED_REQUEST_ERROR = 'BROWSER_REQUEST_REQUIRED';
+
 function request(url: string, init: RequestInit) {
   return fetch(url, {
     ...init,
     cache: 'no-store',
     signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
   });
+}
+
+/** True only when Alpha Prime rejects the token itself, not when it refuses or fails the call. */
+function rejectsToken(response: Response, data: AlphaPrimeResponse | null) {
+  if (response.status === 401) return true;
+  return response.status === 403 && data?.error !== REFUSED_REQUEST_ERROR;
 }
 
 async function readJson(response: Response): Promise<AlphaPrimeResponse | null> {
@@ -72,6 +82,9 @@ export async function loginWithEmail(
     if (data.requires_2fa) {
       return { kind: 'two-factor', message: data.error || 'Enter your 6-digit authenticator code.' };
     }
+    if (data.error === REFUSED_REQUEST_ERROR) {
+      return { kind: 'error', message: 'Alpha Prime refused the connection for a moment. Try again.' };
+    }
     if (!response.ok || !data.success || !data.jwt) {
       const defaultMessage = data.status === 'pending_review'
         ? 'This Alpha Prime account is still pending review.'
@@ -105,7 +118,10 @@ export async function validateToken(jwt: string) {
     throw unreachable(error);
   });
   const data = await readJson(response);
-  if (!response.ok || !data?.success) throw new SessionExpiredError('The Alpha Prime session is invalid.');
+  if (rejectsToken(response, data) || (response.ok && data?.success === false)) {
+    throw new SessionExpiredError('The Alpha Prime session is invalid.');
+  }
+  if (!response.ok || !data?.success) throw new Error('Alpha Prime is busy right now. Try again in a moment.');
   if (data.status === 'blocked') throw new Error('This Alpha Prime account is suspended.');
   return {
     wallet: data.wallet,
@@ -132,8 +148,11 @@ export async function fetchAlphaSnapshot(
 
   // The status code below still gives the most useful error when the body is not JSON.
   const payload = await readJson(response);
-  if (response.status === 401 || response.status === 403) {
-    throw new SessionExpiredError('Your Alpha Prime session has ended.');
+  if (rejectsToken(response, payload)) {
+    // Ask Alpha Prime a second time before signing anyone out, so a single glitchy answer cannot.
+    const confirmed = await validateToken(jwt).then(() => false, (error: unknown) => error instanceof SessionExpiredError);
+    if (confirmed) throw new SessionExpiredError('Your Alpha Prime session has ended.');
+    throw new Error('Alpha Prime briefly refused the request.');
   }
   if (!response.ok || !payload?.success) {
     throw new Error('Alpha Prime did not return account data.');
