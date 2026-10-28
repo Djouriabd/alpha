@@ -1,0 +1,78 @@
+:root {
+  --arctic: #d3d1ce;
+  --apres-ski: #6c6d74;
+  --slopes: #b3b7ba;
+  --midnight: #090f15;
+  --mountainside: #262e36;
+  --white: #f7f8fa;
+  --green: #18c79c;
+  --green-soft: #ddf7ef;
+  --green-ink: #128266;
+  --red: #ef6a72;
+  --red-soft: #fbe3e5;
+  --red-ink: #a43943;
+  --amber: #e0a836;
+  --amber-soft: #f8f0dd;
+  --card: #e7e7e5;
+  --card-latest: #ecece8;
+  --line: #aeb1b3;
+  --line-soft: #bfc2c3;
+  --font: var(--font-baloo), system-ui, sans-serif;
+  color-scheme: light;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
+body {
+  min-height: 100dvh;
+  background: var(--arctic);
+  color: var(--midnight);
+  font-family: var(--font);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+button,
+input {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+  border: 0;
+  background: none;
+}
+
+button:disabled {
+  cursor: default;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+:focus-visible {
+  outline: 2px solid var(--green);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
