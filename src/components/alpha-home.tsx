@@ -6,8 +6,12 @@ import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import { AUTO_REFRESH_SECONDS, useSession, useTracker } from '@/components/alpha-provider';
 import { BootScreen, Countdown, formatClock, formatTime, Spinner, Switch } from '@/components/common';
 import { LoginScreen } from '@/components/login-screen';
+import { EXCHANGE_ENDPOINTS } from '@/lib/exchange-endpoints';
 import type { SessionInfo, TrackingEvent } from '@/lib/types';
 import styles from './ui.module.css';
+
+const EXCHANGE_NAMES = new Intl.ListFormat('en', { type: 'conjunction' })
+  .format(EXCHANGE_ENDPOINTS.map(({ name }) => name));
 
 const EventCard = memo(function EventCard({ event, latest }: { event: TrackingEvent; latest: boolean }) {
   const isSession = event.type === 'session';
@@ -121,7 +125,7 @@ function MenuSheet({ session, onClose }: { session: SessionInfo; onClose: () => 
           <span className={styles.monitorIcon}>◉</span>
           <span>
             <span className={styles.settingTitle} style={{ display: 'block' }}>exchange watch</span>
-            <span className={styles.settingCaption}>Monitor five exchange API endpoints</span>
+            <span className={styles.settingCaption}>Monitor {EXCHANGE_ENDPOINTS.length} exchange API endpoints</span>
           </span>
           <span className={styles.chevron}>›</span>
         </Link>
@@ -222,7 +226,7 @@ function HomeScreen({ session }: { session: SessionInfo }) {
             <span className={styles.monitorIcon}>◉</span>
             <div style={{ flex: 1 }}>
               <p className={styles.noteTitle}>exchange watch</p>
-              <p className={styles.noteText}>OKX, Binance, Bybit, KuCoin and MEXC health</p>
+              <p className={styles.noteText}>{EXCHANGE_NAMES} health</p>
             </div>
             <span className={styles.chevron}>›</span>
           </Link>

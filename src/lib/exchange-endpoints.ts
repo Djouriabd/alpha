@@ -36,6 +36,12 @@ export const EXCHANGE_ENDPOINTS: ExchangeEndpoint[] = [
     shortName: 'MX',
     url: 'https://api.mexc.com/api/v3/ping',
   },
+  {
+    id: 'gateio',
+    name: 'Gate.io',
+    shortName: 'GT',
+    url: 'https://api.gateio.ws/api/v4/spot/time',
+  },
 ];
 
 export const EXCHANGE_INTERVAL_OPTIONS = [30, 60, 300, 900] as const;

@@ -3,7 +3,7 @@
 Alpha Web is the Next.js website version of the Alpha mobile app. It connects to an Alpha Prime
 account, tracks `AVG % TODAY` live, raises an alert whenever the value changes or the Alpha Prime
 session expires, and runs **exchange watch** — a health monitor for the OKX, Binance, Bybit, KuCoin,
-and MEXC public APIs.
+MEXC, and Gate.io public APIs.
 
 ## Features
 
